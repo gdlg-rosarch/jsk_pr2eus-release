@@ -240,7 +240,6 @@
             (workspace-x 1.0) (workspace-y 1.0) (workspace-z 1.6)
             (goal-constraints) (extra-goal-constraints)
             (path-constraints) (trajectory-constraints)
-            (max-velocity-scale) (max-acceleration-scale)
             &allow-other-keys)
    (let ((group-name (cdr (assoc :group-name (cdr (assoc confkey config-list)))))
          (mpr (instance moveit_msgs::motionplanrequest :init))
@@ -269,15 +268,11 @@
            (setq extra-goal-constraints (list extra-goal-constraints)))
        (nconc (send mpr :goal_constraints) extra-goal-constraints))
      (if path-constraints (send mpr :path_constraints path-constraints))
-     ;; TrajectoryConstraints is not used in plannning
-     ;; Detailed info: https://github.com/ros-planning/moveit_msgs/issues/2
      (if trajectory-constraints (send mpr :trajectory_constraints trajectory-constraints))
      (send mpr :planner_id planner-id) ;; select from :query-planner-interface
      (send mpr :group_name group-name)
      (send mpr :num_planning_attempts planning-attempts)
      (send mpr :allowed_planning_time planning-time)
-     (when max-velocity-scale (send mpr :max_velocity_scaling_factor max-velocity-scale))
-     (when max-acceleration-scale (send mpr :max_acceleration_scaling_factor max-acceleration-scale))
      ;;(print-ros-msg mpr)
      (when use-action
        (send self :init-action-client)
@@ -524,10 +519,10 @@
                     cds confkey :end-coords ed-lst args))
      ret))
   (:angle-vector-motion-plan ;;
-   (av &rest args &key (ctype controller-type) (start-offset-time 0) (total-time)
-       (move-arm :larm) (reset-total-time 5000.0) (use-send-angle-vector) (scale 1.0)
+   (av &rest args &key (ctype controller-type) (start-offset-time) (total-time)
+       (move-arm :larm) (reset-total-time 5000.0) (use-send-angle-vector)
        &allow-other-keys)
-   (let (traj ret orig-total-time sent-controller)
+   (let (traj ret filtered orig-total-time)
      (setq ctype (or ctype controller-type))
      (unless (gethash ctype controller-table)
        (warn ";; controller-type: ~A not found" ctype)
@@ -543,45 +538,40 @@
          (ros::ros-warn "reset Trajectory Total time")
          (setq traj (send* self :trajectory-filter traj :start-offset-time start-offset-time :total-time reset-total-time args)))
        (ros::ros-info ";; Planned Trajectory Total Time ~7,3f [sec]" orig-total-time)
-       (setq total-time
-             (cond
-               ((eq total-time :fast) (* scale (* orig-total-time 1000)))
-               ((or (null total-time) (> orig-total-time (/ total-time 1000.0))) (* orig-total-time 1000))
-               (t total-time)))
-       (setq traj (send* self :trajectory-filter traj :start-offset-time start-offset-time :total-time total-time args))
-       (ros::ros-info ";; Scaled Trajectory Total Time ~0,3f(~0,3f) [sec]" (send (send (car (last (send traj :points))) :time_from_start) :to-sec) (/ total-time 1000.0))
-       (ros::ros-info ";; generated ~A points for ~A sec using [~A] group" (length (send traj :points)) (/ total-time 1000.0) (send ret :group_name))
-       (ros::ros-info ";; will send to ~A" (send traj :joint_names))
+       (when (and total-time ;; [msec]
+                  (< orig-total-time
+                     (/ total-time 1000)))
+         (setq filtered t)
+         (setq traj (send* self :trajectory-filter traj :start-offset-time start-offset-time :total-time total-time args))
+         (setq orig-total-time (/ total-time 1000))
+         (ros::ros-info ";; Scaled Trajectory Total Time ~7,3f [sec]" (/ total-time 1000)))
+       (when (and start-offset-time (null filtered))
+         (setq traj (send* self :trajectory-filter traj :start-offset-time start-offset-time :total-time (* orig-total-time 1000.0) args)) ;; :total-time [msec]
+         (ros::ros-info ";; Scaled Trajectory Total Time ~7,3f [sec]" orig-total-time))
+
+       (ros::ros-info ";; generated ~A points for ~A sec using [~A] group" (length (send traj :points)) orig-total-time (send ret :group_name))
        ;;
        (mapcar
         #'(lambda (action param)
             ;; find controller that does not included in move-arm
-            ;; action : method (:larm-controller)
-            ;; param  : definitions ((controller-action, controller-state, action-type, joint-names))
             (when (and
                     (find param (send self ctype) :test #'equal)
                     (not (intersection (send traj :joint_names) (cdr (assoc :joint-names param)) :test #'string=)))
-              (ros::ros-info ";; action:~A, param:~A (~A)" action param (length param))
               ;; send via :angle-vector
               (maphash #'(lambda (ac ct)
-                           (when (and (= (length ct) 1) (equal (send-all (list action) :name) (send-all ct :name))
-                                      (not (member (send-all ct :name) sent-controller :test #'equal)))
-                             (ros::ros-info ";; send self :angle-vector ~A ~A" ac ct)
-                             (push (send-all ct :name) sent-controller)
+                           (if (equal (list action) ct)
                              (if (listp av)
-                               (send-message self robot-interface :angle-vector-sequence av total-time ac)
-                               (send-message self robot-interface :angle-vector av total-time ac))))
+                               (send-message self robot-interface :angle-vector-sequence av (* orig-total-time 1000) ac)
+                               (send-message self robot-interface :angle-vector av (* orig-total-time 1000) ac))))
                        controller-table)
               ))
-        (gethash ctype controller-table) (send self ctype))
+        controller-actions (send self controller-type))
 
        (if use-send-angle-vector
            (send* self :joint-trajectory-to-angle-vector-list move-arm traj args)
-         (progn
-           (ros::ros-info ";; send self :send-trajectory ~A" ctype)
            (if start-offset-time
-             (send* self :send-trajectory traj :controller-type ctype :starttime start-offset-time args)
-             (send* self :send-trajectory traj :controller-type ctype args))))
+             (send* self :send-trajectory traj :starttime start-offset-time args)
+             (send* self :send-trajectory traj args)))
        (if (listp av) av (list av)))))
   (:move-end-coords-plan ;;
    (cds &rest args &key (move-arm :larm) (reset-total-time 5000.0) (use-send-angle-vector) &allow-other-keys)
@@ -600,7 +590,7 @@
          (send* self :send-trajectory traj args))
        )))
   (:trajectory-filter ;; simple trajectory for zero duration
-   (traj &key (copy) (total-time 5000.0) (minimum-time 0.001) (start-offset-time 0) (clear-velocities) &rest args &allow-other-keys)
+   (traj &key (copy) (total-time 5000.0) (minimum-time 0.001) (start-offset-time) (clear-velocities) &rest args &allow-other-keys)
    (let ((orig-total-time (send (send (car (last (send traj :points))) :time_from_start) :to-sec)))
    (when (and minimum-time (not start-offset-time)
               (> orig-total-time

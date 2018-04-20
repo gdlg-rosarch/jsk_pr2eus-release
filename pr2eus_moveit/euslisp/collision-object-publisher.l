@@ -13,8 +13,8 @@
    (setq topicname topic-name
          attached-topicname attached-topic-name
          scene-srv scene-service)
-   (ros::advertise topicname moveit_msgs::CollisionObject 1 t) ;; latch = t
-   (ros::advertise attached-topicname moveit_msgs::AttachedCollisionObject 1 t) ;; latch = t
+   (ros::advertise topicname moveit_msgs::CollisionObject 100)
+   (ros::advertise attached-topicname moveit_msgs::AttachedCollisionObject 100)
    (setq object-list (make-hash-table))
    (setq attached-object-list (make-hash-table))
    self)
@@ -179,12 +179,7 @@
        (dolist (msg (send scene :world :collision_objects))
          (send msg :header :stamp (ros::time-now))
          (send msg :operation moveit_msgs::CollisionObject::*REMOVE*)
-         (ros::publish topicname msg)
-         ;; According to moveit tutorials, we need to put sleep after topic publishing.
-         ;; http://docs.ros.org/indigo/api/pr2_moveit_tutorials/html/planning/src/doc/planning_scene_ros_api_tutorial.html
-         ;; adding unix::usleep is not smart solution, but I couldn't find out better solution.
-         ;; https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/315#issuecomment-315015718
-         (unix::usleep (* 500 1000)))
+         (ros::publish topicname msg))
        (setq object-list (make-hash-table))
        t)))
   (:wipe-all-attached-object ()
@@ -197,12 +192,7 @@
        (dolist (msg (send scene :robot_state :attached_collision_objects))
          (send msg :object :header :stamp (ros::time-now))
          (send msg :object :operation moveit_msgs::CollisionObject::*REMOVE*)
-         (ros::publish attached-topicname msg)
-         ;; According to moveit tutorials, we need to put sleep after topic publishing.
-         ;; http://docs.ros.org/indigo/api/pr2_moveit_tutorials/html/planning/src/doc/planning_scene_ros_api_tutorial.html
-         ;; adding unix::usleep is not smart solution, but I couldn't find out better solution.
-         ;; https://github.com/jsk-ros-pkg/jsk_pr2eus/pull/315#issuecomment-315015718
-         (unix::usleep (* 500 1000)))
+         (ros::publish attached-topicname msg))
        (setq attached-object-list (make-hash-table))
        t)))
   (:delete-object (obj)
