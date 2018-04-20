@@ -1,4 +1,4 @@
-From c044e8c1ac43f5b40152a4d7f8968355242eb875 Mon Sep 17 00:00:00 2001
+From c45b788dc9bd2633708617cdf6df19c0c7d2b00a Mon Sep 17 00:00:00 2001
 From: Kei Okada <k-okada@jsk.t.u-tokyo.ac.jp>
 Date: Wed, 22 Feb 2017 18:37:11 +0900
 Subject: [PATCH] pr2_gazebo is not released on kinetic
@@ -8,7 +8,7 @@ Subject: [PATCH] pr2_gazebo is not released on kinetic
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/package.xml b/package.xml
-index debb4ff..973ddcd 100644
+index 52279212..b9d4b886 100644
 --- a/package.xml
 +++ b/package.xml
 @@ -28,9 +28,9 @@
@@ -25,5 +25,5 @@ index debb4ff..973ddcd 100644
  
  </package>
 -- 
-1.9.0
+2.17.0
 
