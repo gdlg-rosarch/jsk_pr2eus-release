@@ -1,0 +1,39 @@
+language:
+  - generic
+sudo: required
+dist: trusty
+services:
+  - docker
+notifications:
+  email:
+    on_success: always
+    on_failure: always
+  slack: jsk-robotics:Av7tc8wj3IWkLYvlTzHE7x2g
+env:
+  global:
+    - secure: "REUwDilheEXGFShSdFNgQ1rRAFBw2QG2eT8XDAQsDFyhPfCnjGDA1Ak25TbVIz4a02M9/hDP4QtsXFj6VRHVs4tV55zrGeLea06+Fw8vjHEICYVtfzYYvZB3pHnWoxxPUcQTU+CgTMGV3lLSupMgvyNNY8J6UdaiW8+Oj7icHc4="
+    - ROSWS=wstool
+    - BUILDER=catkin
+    - USE_DOCKER=true
+    - CATKIN_PARALLEL_TEST_JOBS="-j1 -p1"
+    - ROS_PARALLEL_TEST_JOBS="-j1"
+  matrix:
+    - ROS_DISTRO=hydro   USE_DEB=true
+    - ROS_DISTRO=hydro   USE_DEB=false
+    - ROS_DISTRO=indigo  USE_DEB=true
+    - ROS_DISTRO=indigo  USE_DEB=false
+    - ROS_DISTRO=jade    USE_DEB=true
+    - ROS_DISTRO=jade    USE_DEB=false
+    - ROS_DISTRO=kinetic USE_DEB=true
+    - ROS_DISTRO=kinetic USE_DEB=false
+matrix:
+  fast_finish: true
+  allow_failures:
+    - env: ROS_DISTRO=hydro   USE_DEB=false
+    - env: ROS_DISTRO=indigo  USE_DEB=false
+    - env: ROS_DISTRO=jade    USE_DEB=false
+    - env: ROS_DISTRO=kinetic USE_DEB=false
+script: source .travis/travis.sh
+after_success:
+  - TRAVIS_JOB_SUBNUMBER="${TRAVIS_JOB_NUMBER##*.}"
+  - if [ "$TRAVIS_JOB_SUBNUMBER" == 1 -a "$TRAVIS_BRANCH" == "master" -a "${TRAVIS_SECURE_ENV_VARS}" == "true" ]; then cd ${CI_SOURCE_PATH}; .travis/upload-docs.sh; fi
