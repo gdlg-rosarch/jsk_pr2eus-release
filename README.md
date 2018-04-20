@@ -1,48 +1,9 @@
-## Reach Object Demo
-### Reach Object Demo with PR2
+jsk_pr2eus [![Build Status](https://travis-ci.org/jsk-ros-pkg/jsk_pr2eus.png?branch=master)](https://travis-ci.org/jsk-ros-pkg/jsk_pr2eus)
 
-pr2_gazebo is required.
+==========
 
-```
-# launch gazebo
-roslaunch pr2_gazebo pr2_empty_world.launch
-roslaunch pr2eus_tutorials spawn_objects.launch
-
-# launch recognition
-roslaunch jsk_pcl_ros hsi_color_filter.launch INPUT:=/wide_stereo/points2 h_min:=75 s_min:=50
-
-# visualization
-rviz -d `rospack find pr2eus_tutorials`/config/pr2_reach_object.rviz
-
-# eus
-roscd pr2eus_tutorials/euslisp
-roseus reach-object.l
-(pr2-setup)
-(reach-object-demo)
-```
-
-### Reach Object Demo with HRP2JSK
-
-hrpsys_gazebo_tutorials is required.
-(HRP2 model is closed.)
-
-```
-# launch gazebo
-roslaunch hrpsys_gazebo_tutorials gazebo_hrp2jsk_no_controllers.launch
-roslaunch pr2eus_tutorials spawn_objects.launch
-
-# lanch hrpsys
-rtmlaunch hrpsys_gazebo_tutorials hrp2jsk_hrpsys_bringup.launch KINEMATICS_MODE:=true
-
-# launch recognition
-roslaunch jsk_pcl_ros hsi_color_filter.launch INPUT:=/xtion/depth/points h_min:=75 s_min:=50
-
-# visualization
-rviz -d `rospack find pr2eus_tutorials`/config/hrp2jsk_reach_object.rviz
-
-# eus
-roscd pr2eus_tutorials/euslisp
-roseus reach-object.l
-(hrp2jsk-setup)
-(reach-object-demo)
-```
+| Package            | Indigo (Saucy)                                                                                                                                                                               | Indigo (Trusty)                                                                                                                                                                                | Jade (Trusty)                                                                                                                                                                                  | Jade (Vivid)                                                                                                                                                                                 | Kinetic (Wily)                                                                                                                                                                             | Kinetic (Xenial)                                                                                                                                                                                 |
+|:-------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| jsk_pr2eus (armhf) | [![Build Status](http://build.ros.org/job/Ibin_arm_uShf__jsk_pr2eus__ubuntu_saucy_armhf__binary/badge/icon)](http://build.ros.org/job/Ibin_arm_uShf__jsk_pr2eus__ubuntu_saucy_armhf__binary) | [![Build Status](http://build.ros.org/job/Ibin_arm_uThf__jsk_pr2eus__ubuntu_trusty_armhf__binary/badge/icon)](http://build.ros.org/job/Ibin_arm_uThf__jsk_pr2eus__ubuntu_trusty_armhf__binary) | [![Build Status](http://build.ros.org/job/Jbin_arm_uThf__jsk_pr2eus__ubuntu_trusty_armhf__binary/badge/icon)](http://build.ros.org/job/Jbin_arm_uThf__jsk_pr2eus__ubuntu_trusty_armhf__binary) | [![Build Status](http://build.ros.org/job/Jbin_arm_uVhf__jsk_pr2eus__ubuntu_vivid_armhf__binary/badge/icon)](http://build.ros.org/job/Jbin_arm_uVhf__jsk_pr2eus__ubuntu_vivid_armhf__binary) | [![Build Status](http://build.ros.org/job/Kbin_arm_uWhf__jsk_pr2eus__ubuntu_wily_armhf__binary/badge/icon)](http://build.ros.org/job/Kbin_arm_uWhf__jsk_pr2eus__ubuntu_wily_armhf__binary) | [![Build Status](http://build.ros.org/job/Kbin_uxhf_uXhf__jsk_pr2eus__ubuntu_xenial_armhf__binary/badge/icon)](http://build.ros.org/job/Kbin_uxhf_uXhf__jsk_pr2eus__ubuntu_xenial_armhf__binary) |
+| jsk_pr2eus (i386)  | [![Build Status](http://build.ros.org/job/Ibin_uS32__jsk_pr2eus__ubuntu_saucy_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uS32__jsk_pr2eus__ubuntu_saucy_i386__binary)           | [![Build Status](http://build.ros.org/job/Ibin_uT32__jsk_pr2eus__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Ibin_uT32__jsk_pr2eus__ubuntu_trusty_i386__binary)           | [![Build Status](http://build.ros.org/job/Jbin_uT32__jsk_pr2eus__ubuntu_trusty_i386__binary/badge/icon)](http://build.ros.org/job/Jbin_uT32__jsk_pr2eus__ubuntu_trusty_i386__binary)           | [![Build Status](http://build.ros.org/job/Jbin_uV32__jsk_pr2eus__ubuntu_vivid_i386__binary/badge/icon)](http://build.ros.org/job/Jbin_uV32__jsk_pr2eus__ubuntu_vivid_i386__binary)           | [![Build Status](http://build.ros.org/job/Kbin_uW32__jsk_pr2eus__ubuntu_wily_i386__binary/badge/icon)](http://build.ros.org/job/Kbin_uW32__jsk_pr2eus__ubuntu_wily_i386__binary)           | [![Build Status](http://build.ros.org/job/Kbin_uX32__jsk_pr2eus__ubuntu_xenial_i386__binary/badge/icon)](http://build.ros.org/job/Kbin_uX32__jsk_pr2eus__ubuntu_xenial_i386__binary)             |
+| jsk_pr2eus (amd64) | [![Build Status](http://build.ros.org/job/Ibin_uS64__jsk_pr2eus__ubuntu_saucy_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uS64__jsk_pr2eus__ubuntu_saucy_amd64__binary)         | [![Build Status](http://build.ros.org/job/Ibin_uT64__jsk_pr2eus__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Ibin_uT64__jsk_pr2eus__ubuntu_trusty_amd64__binary)         | [![Build Status](http://build.ros.org/job/Jbin_uT64__jsk_pr2eus__ubuntu_trusty_amd64__binary/badge/icon)](http://build.ros.org/job/Jbin_uT64__jsk_pr2eus__ubuntu_trusty_amd64__binary)         | [![Build Status](http://build.ros.org/job/Jbin_uV64__jsk_pr2eus__ubuntu_vivid_amd64__binary/badge/icon)](http://build.ros.org/job/Jbin_uV64__jsk_pr2eus__ubuntu_vivid_amd64__binary)         | [![Build Status](http://build.ros.org/job/Kbin_uW64__jsk_pr2eus__ubuntu_wily_amd64__binary/badge/icon)](http://build.ros.org/job/Kbin_uW64__jsk_pr2eus__ubuntu_wily_amd64__binary)         | [![Build Status](http://build.ros.org/job/Kbin_uX64__jsk_pr2eus__ubuntu_xenial_amd64__binary/badge/icon)](http://build.ros.org/job/Kbin_uX64__jsk_pr2eus__ubuntu_xenial_amd64__binary)           |
